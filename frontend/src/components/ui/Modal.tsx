@@ -19,6 +19,13 @@ export function Modal({ open, title, onClose, children, footer, width = 'max-w-l
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
+  // onClose 通常是内联箭头函数（每次渲染新引用），用 ref 持有最新值，
+  // 让入场动画只依赖 open，避免弹窗内输入触发重渲染时整屏重播动画
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
+
   useEffect(() => {
     if (!open) return;
     // 入场：遮罩淡入 + 面板缩放上浮
@@ -30,13 +37,13 @@ export function Modal({ open, title, onClose, children, footer, width = 'max-w-l
         { opacity: 1, y: 0, scale: 1, duration: 0.3, ease: 'power3.out' },
       );
     });
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onCloseRef.current();
     window.addEventListener('keydown', onKey);
     return () => {
       ctx.revert();
       window.removeEventListener('keydown', onKey);
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 

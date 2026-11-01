@@ -66,6 +66,11 @@ function refreshOnce(): Promise<string | null> {
   return refreshing;
 }
 
+/** 单飞刷新的对外入口：auth store 的会话恢复也走这条通道，保证全局同时只有一个 refresh 在飞 */
+export function refreshAccessToken(): Promise<string | null> {
+  return refreshOnce();
+}
+
 /* ---- 业务错误 ---- */
 
 export class ApiError extends Error {

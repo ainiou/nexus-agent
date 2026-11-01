@@ -18,7 +18,7 @@ coverage.html
 .DS_Store
 
 # ide
-.idea/
+.idea
 .vscode/
 
 # milvus lite local data

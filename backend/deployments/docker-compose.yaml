@@ -11,7 +11,7 @@ name: nexus-agent
 services:
   # ---- 核心（P0 必需） ----
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16
     profiles: [core, full, obs]
     environment:
       POSTGRES_USER: nexus
@@ -25,7 +25,7 @@ services:
       retries: 10
 
   redis:
-    image: redis:7-alpine
+    image: redis:latest
     profiles: [core, full, obs]
     ports: ["6380:6379"]
     volumes: [redisdata:/data]
@@ -42,7 +42,7 @@ services:
 
   # ---- 检索与模型（RAG/MCP 相关集） ----
   etcd: # Milvus 依赖
-    image: quay.io/coreos/etcd:v3.5.14
+    image: quay.io/coreos/etcd:v3.5.18
     profiles: [core, full, obs]
     environment:
       ETCD_AUTO_COMPACTION_MODE: revision
@@ -50,7 +50,7 @@ services:
     command: etcd -advertise-client-urls=http://etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
 
   milvus:
-    image: milvusdb/milvus:v2.5.6
+    image: milvusdb/milvus:v2.6.2
     profiles: [core, full, obs]
     command: ["milvus", "run", "standalone"]
     environment:

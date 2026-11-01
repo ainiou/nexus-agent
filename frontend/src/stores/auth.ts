@@ -7,7 +7,7 @@
  * - 请求层通过 bindAuthHooks 与本 store 解耦，避免循环依赖。
  */
 import { create } from 'zustand';
-import { bindAuthHooks, http } from '@/lib/request';
+import { bindAuthHooks, http, refreshAccessToken } from '@/lib/request';
 import type { LoginReq, RegisterReq, TokenPair, User } from '@/types/auth';
 
 interface AuthState {
@@ -28,28 +28,37 @@ interface AuthState {
 
 const REFRESH_KEY = 'nx.refresh';
 
+/** 会话恢复单飞：StrictMode 双挂载/并发调用共享同一次恢复，避免并发轮换 refresh token */
+let bootstrapPromise: Promise<void> | null = null;
+
 export const useAuth = create<AuthState>((set) => ({
   accessToken: undefined,
   user: undefined,
   bootstrapped: false,
 
   /** 应用启动时调用：用 localStorage 里的 refresh_token 恢复会话 */
-  bootstrap: async () => {
-    const refreshToken = localStorage.getItem(REFRESH_KEY);
-    if (refreshToken) {
-      try {
-        const pair = await http.post<TokenPair>('/auth/refresh', {
-          refresh_token: refreshToken,
-        });
-        localStorage.setItem(REFRESH_KEY, pair.refresh_token);
-        set({ accessToken: pair.access_token }); // 先注入 token，后续 /me 自动带凭证
-        const user = await http.get<User>('/me');
-        set({ user });
-      } catch {
-        localStorage.removeItem(REFRESH_KEY);
+  bootstrap: () => {
+    bootstrapPromise ??= (async () => {
+      const refreshToken = localStorage.getItem(REFRESH_KEY);
+      if (refreshToken) {
+        // 走请求层单飞刷新（新 refresh_token 由请求层写回 localStorage，
+        // 新 access_token 经 onTokenRefreshed 注入本 store），不再直连 http.post
+        const accessToken = await refreshAccessToken();
+        if (accessToken) {
+          try {
+            const user = await http.get<User>('/me');
+            set({ accessToken, user });
+          } catch {
+            localStorage.removeItem(REFRESH_KEY);
+            set({ accessToken: undefined });
+          }
+        } else {
+          localStorage.removeItem(REFRESH_KEY);
+        }
       }
-    }
-    set({ bootstrapped: true });
+      set({ bootstrapped: true });
+    })();
+    return bootstrapPromise;
   },
 
   login: async (req) => {
