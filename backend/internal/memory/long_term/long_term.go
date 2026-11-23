@@ -74,7 +74,10 @@ func (m *Manager) ExtractAndStore(ctx context.Context, userID int64, agentID *in
 	// ① LLM 抽取事实
 	var b strings.Builder
 	for _, msg := range msgs {
-		b.WriteString(msg.Role + ": " + msg.Content + "\n")
+		b.WriteString(msg.Role)
+		b.WriteString(": ")
+		b.WriteString(msg.Content)
+		b.WriteString("\n")
 	}
 	resp, _, err := m.gateway.Chat(ctx, m.extractMdl(), nil, &llm.ChatRequest{
 		Messages: []llm.Message{
