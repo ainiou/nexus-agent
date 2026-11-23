@@ -101,6 +101,11 @@ func run() error {
 	// ===== ⑤ LLM 网关与向量库 =====
 	gateway := llm.NewGateway(&cfg.LLM)
 	store := vector.NewMilvusStore(mcli)
+	// Milvus 不会在 Insert 时自动建集合，长期记忆集合必须显式准备；
+	// 失败不阻断启动：记忆功能降级为仅 PG 存储，召回为空但不影响对话。
+	if err := store.EnsureCollection(ctx, "memories", cfg.Milvus.Dim); err != nil {
+		observability.LogWarn("ensure memory collection failed, long-term recall degraded", "err", err.Error())
+	}
 
 	// ===== ⑥ 数据访问与工具系统 =====
 	repos := repo.New(db)

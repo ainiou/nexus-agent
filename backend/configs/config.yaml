@@ -50,8 +50,8 @@ llm:
   retry_max: 3                   # 指数退避重试次数
   stream_first_token_timeout: 30s
   local: false                   # true 时使用 ollama 本地模型跑通全流程
-  default_chat: deepseek-chat
-  default_embedding: bge-m3
+  default_chat: qwen2.5
+  default_embedding: qwen3-embedding
 
 rag:
   chunk_size: 512

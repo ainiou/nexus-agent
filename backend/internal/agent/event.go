@@ -51,9 +51,13 @@ func EvtToolResult(id, result string, ms int64, status string) Event {
 
 // EvtAgentEvent 多智能体事件（typ: delegate/progress/merge）。
 func EvtAgentEvent(typ, expert, detail string) Event {
-	return Event{Type: TypeAgentEvent, Data: map[string]any{
-		"type": typ, "expert": expert, "detail": detail,
-	}}
+	return Event{
+		Type: TypeAgentEvent,
+		Data: map[string]any{
+			"type":   typ,
+			"expert": expert,
+			"detail": detail,
+		}}
 }
 
 // EvtUsage 用量事件。

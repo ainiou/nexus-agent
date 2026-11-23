@@ -16,6 +16,7 @@ import (
 
 	"github.com/chengpeng-cp/nexus-agent/internal/llm"
 	"github.com/chengpeng-cp/nexus-agent/internal/model"
+	"github.com/chengpeng-cp/nexus-agent/internal/observability"
 	"github.com/chengpeng-cp/nexus-agent/internal/vector"
 )
 
@@ -148,10 +149,15 @@ func (m *Manager) ExtractAndStore(ctx context.Context, userID int64, agentID *in
 			if agentID != nil {
 				agentIDVal = *agentID
 			}
-			_ = m.store.Upsert(ctx, m.collection, []vector.Record{{
+			// 向量写入失败只降级为"不可语义召回"，不影响 PG 中的记忆记录，
+			// 但必须留下日志，避免出现 PG 有数据、Milvus 无向量的静默不一致。
+			if err := m.store.Upsert(ctx, m.collection, []vector.Record{{
 				ID: mem.ID, Vector: factVecs[i],
 				Metadata: map[string]any{"user_id": userID, "agent_id": agentIDVal},
-			}})
+			}}); err != nil {
+				observability.LogWarn("upsert memory vector failed",
+					"memory_id", fmt.Sprint(mem.ID), "err", err.Error())
+			}
 		case "UPDATE":
 			_ = m.repo.UpdateContent(ctx, op.ID, op.Content)
 		case "DELETE":
