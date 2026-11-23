@@ -6,19 +6,21 @@ import (
 	"time"
 
 	"gorm.io/datatypes"
+	"gorm.io/gorm"
 )
 
 // User 用户（P0 仅 admin/user 两级角色，不做 RBAC）。
 type User struct {
-	ID           int64     `gorm:"primaryKey" json:"id"`
-	Username     string    `gorm:"size:64;uniqueIndex" json:"username"`
-	Email        string    `gorm:"size:128;uniqueIndex" json:"email"`
-	PasswordHash string    `gorm:"size:256" json:"-"` // 绝不序列化
-	Role         string    `gorm:"size:20;default:user" json:"role"`
-	AvatarURL    string    `gorm:"size:512" json:"avatar_url"`
-	Status       int16     `gorm:"default:1" json:"status"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	ID           int64          `gorm:"primaryKey" json:"id"`
+	Username     string         `gorm:"size:64;uniqueIndex" json:"username"`
+	Email        string         `gorm:"size:128;uniqueIndex" json:"email"`
+	PasswordHash string         `gorm:"size:256" json:"-"` // 绝不序列化
+	Role         string         `gorm:"size:20;default:user" json:"role"`
+	AvatarURL    string         `gorm:"size:512" json:"avatar_url"`
+	Status       int16          `gorm:"default:1" json:"status"`
+	CreatedAt    time.Time      `json:"created_at"`
+	UpdatedAt    time.Time      `json:"updated_at"`
+	DeletedAt    gorm.DeletedAt `json:"-"`
 }
 
 // IsAdmin 是否管理员。
@@ -38,6 +40,7 @@ type Session struct {
 	Metadata     datatypes.JSON `gorm:"type:jsonb;default:'{}'" json:"metadata"`
 	CreatedAt    time.Time      `json:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at"`
+	DeletedAt    gorm.DeletedAt `json:"-"`
 }
 
 // Message 消息。role: user/assistant/system/tool
@@ -59,6 +62,7 @@ type Message struct {
 	TraceID          string         `gorm:"size:64;default:" json:"trace_id"`
 	Metadata         datatypes.JSON `gorm:"type:jsonb;default:'{}'" json:"metadata"` // 含 agent_trace 决策链
 	CreatedAt        time.Time      `gorm:"index:idx_messages_session,priority:2" json:"created_at"`
+	DeletedAt        gorm.DeletedAt `json:"-"`
 }
 
 // 消息状态。
@@ -70,20 +74,21 @@ const (
 
 // Feedback 用户反馈（坏例回流闭环入口）。
 type Feedback struct {
-	ID          int64          `gorm:"primaryKey" json:"id"`
-	MessageID   int64          `json:"message_id"`
-	SessionID   string         `gorm:"type:uuid" json:"session_id"`
-	UserID      int64          `json:"user_id"`
-	Rating      int16          `json:"rating"` // 1赞 2踩
-	Reason      string         `gorm:"size:64" json:"reason"`
-	Comment     string         `gorm:"size:512" json:"comment"`
-	Resolved    bool           `json:"resolved"`
-	EvalCaseID  *int64         `json:"eval_case_id,omitempty"`
-	CreatedAt   time.Time      `json:"created_at"`
+	ID         int64          `gorm:"primaryKey" json:"id"`
+	MessageID  int64          `json:"message_id"`
+	SessionID  string         `gorm:"type:uuid" json:"session_id"`
+	UserID     int64          `json:"user_id"`
+	Rating     int16          `json:"rating"` // 1赞 2踩
+	Reason     string         `gorm:"size:64" json:"reason"`
+	Comment    string         `gorm:"size:512" json:"comment"`
+	Resolved   bool           `json:"resolved"`
+	EvalCaseID *int64         `json:"eval_case_id,omitempty"`
+	CreatedAt  time.Time      `json:"created_at"`
+	DeletedAt  gorm.DeletedAt `json:"-"`
 }
 
 // 反馈评分。
 const (
-	RatingLike  int16 = 1
+	RatingLike    int16 = 1
 	RatingDislike int16 = 2
 )

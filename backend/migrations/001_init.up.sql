@@ -11,7 +11,8 @@ CREATE TABLE users (
     avatar_url    VARCHAR(512) NOT NULL DEFAULT '',
     status        SMALLINT     NOT NULL DEFAULT 1,
     created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-    updated_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+    updated_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    deleted_at    TIMESTAMPTZ
 );
 
 -- ===== 会话 =====
@@ -27,7 +28,8 @@ CREATE TABLE sessions (
     last_msg_at   TIMESTAMPTZ,
     metadata      JSONB       NOT NULL DEFAULT '{}',
     created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at    TIMESTAMPTZ
 );
 CREATE INDEX idx_sessions_user ON sessions(user_id, last_msg_at DESC);
 
@@ -49,7 +51,8 @@ CREATE TABLE messages (
     status            SMALLINT    NOT NULL DEFAULT 1,
     trace_id          VARCHAR(64) NOT NULL DEFAULT '',
     metadata          JSONB       NOT NULL DEFAULT '{}',
-    created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at        TIMESTAMPTZ
 );
 CREATE INDEX idx_messages_session ON messages(session_id, created_at);
 
@@ -62,7 +65,8 @@ CREATE TABLE model_providers (
     api_key    TEXT         NOT NULL DEFAULT '',
     status     SMALLINT     NOT NULL DEFAULT 1,
     created_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
 );
 
 -- ===== 模型配置 =====
@@ -81,7 +85,8 @@ CREATE TABLE model_configs (
     is_default     BOOLEAN     NOT NULL DEFAULT FALSE,
     status         SMALLINT    NOT NULL DEFAULT 1,
     created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at     TIMESTAMPTZ
 );
 CREATE INDEX idx_model_configs_type ON model_configs(type, priority);
 
@@ -107,7 +112,8 @@ CREATE TABLE agents (
     config            JSONB       NOT NULL DEFAULT '{}',
     status            SMALLINT    NOT NULL DEFAULT 1,
     created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at        TIMESTAMPTZ
 );
 ALTER TABLE sessions ADD CONSTRAINT fk_sessions_agent
     FOREIGN KEY (agent_id) REFERENCES agents(id);
@@ -129,7 +135,8 @@ CREATE TABLE tools (
     is_dangerous  BOOLEAN      NOT NULL DEFAULT FALSE,
     status        SMALLINT     NOT NULL DEFAULT 1,
     created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-    updated_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+    updated_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    deleted_at    TIMESTAMPTZ
 );
 
 -- ===== MCP 服务 =====
@@ -146,7 +153,8 @@ CREATE TABLE mcp_servers (
     last_health_at TIMESTAMPTZ,
     tools_cache    JSONB        NOT NULL DEFAULT '[]',
     created_at     TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-    updated_at     TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+    updated_at     TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    deleted_at     TIMESTAMPTZ
 );
 ALTER TABLE tools ADD CONSTRAINT fk_tools_mcp_server
     FOREIGN KEY (mcp_server_id) REFERENCES mcp_servers(id);
@@ -160,7 +168,8 @@ CREATE TABLE a2a_agents (
     status         VARCHAR(20)  NOT NULL DEFAULT 'unknown',
     last_health_at TIMESTAMPTZ,
     created_at     TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-    updated_at     TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+    updated_at     TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    deleted_at     TIMESTAMPTZ
 );
 
 -- ===== 知识库 =====
@@ -177,7 +186,8 @@ CREATE TABLE knowledge_bases (
     milvus_collection  VARCHAR(128) NOT NULL,
     status             VARCHAR(20) NOT NULL DEFAULT 'active',
     created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at         TIMESTAMPTZ
 );
 
 -- ===== 文档 =====
@@ -196,7 +206,8 @@ CREATE TABLE documents (
     enable_graph BOOLEAN      NOT NULL DEFAULT FALSE,
     metadata     JSONB        NOT NULL DEFAULT '{}',
     created_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-    updated_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+    updated_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    deleted_at   TIMESTAMPTZ
 );
 CREATE INDEX idx_documents_kb ON documents(kb_id, status);
 
@@ -211,7 +222,8 @@ CREATE TABLE document_chunks (
     meta        JSONB       NOT NULL DEFAULT '{}',
     vector_id   VARCHAR(64) NOT NULL,
     status      SMALLINT    NOT NULL DEFAULT 1,
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at  TIMESTAMPTZ
 );
 CREATE INDEX idx_chunks_doc ON document_chunks(document_id, seq);
 
@@ -228,7 +240,8 @@ CREATE TABLE memories (
     last_hit_at TIMESTAMPTZ,
     status      SMALLINT    NOT NULL DEFAULT 1,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at  TIMESTAMPTZ
 );
 CREATE INDEX idx_memories_user ON memories(user_id, agent_id, status);
 
@@ -243,7 +256,8 @@ CREATE TABLE prompts (
     is_active  BOOLEAN      NOT NULL DEFAULT FALSE,
     remark     VARCHAR(255) NOT NULL DEFAULT '',
     created_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
 );
 
 -- ===== 工作流 =====
@@ -257,7 +271,8 @@ CREATE TABLE workflows (
     creator_id BIGINT       NOT NULL REFERENCES users(id),
     status     SMALLINT     NOT NULL DEFAULT 1,
     created_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
 );
 
 -- ===== 工作流执行 =====
@@ -272,7 +287,8 @@ CREATE TABLE workflow_runs (
     trace_id     VARCHAR(64) NOT NULL DEFAULT '',
     started_at   TIMESTAMPTZ,
     finished_at  TIMESTAMPTZ,
-    created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at   TIMESTAMPTZ
 );
 CREATE INDEX idx_workflow_runs_status ON workflow_runs(status);
 
@@ -288,7 +304,8 @@ CREATE TABLE workflow_step_runs (
     error       VARCHAR(512) NOT NULL DEFAULT '',
     tokens      INT         NOT NULL DEFAULT 0,
     started_at  TIMESTAMPTZ,
-    finished_at TIMESTAMPTZ
+    finished_at TIMESTAMPTZ,
+    deleted_at  TIMESTAMPTZ
 );
 CREATE INDEX idx_step_runs_run ON workflow_step_runs(run_id);
 
@@ -300,7 +317,8 @@ CREATE TABLE eval_datasets (
     scene       VARCHAR(16) NOT NULL DEFAULT 'agent',
     case_count  INT         NOT NULL DEFAULT 0,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at  TIMESTAMPTZ
 );
 
 -- ===== 评估用例 =====
@@ -313,7 +331,8 @@ CREATE TABLE eval_cases (
     expected_chunk_ids JSONB  NOT NULL DEFAULT '[]',
     tags               VARCHAR(255) NOT NULL DEFAULT '',
     source             VARCHAR(16) NOT NULL DEFAULT 'manual',
-    created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at         TIMESTAMPTZ
 );
 
 -- ===== 评估执行 =====
@@ -328,7 +347,8 @@ CREATE TABLE eval_runs (
     metrics     JSONB,
     started_at  TIMESTAMPTZ,
     finished_at TIMESTAMPTZ,
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at  TIMESTAMPTZ
 );
 
 -- ===== 评估结果 =====
@@ -342,7 +362,8 @@ CREATE TABLE eval_results (
     passed        BOOLEAN NOT NULL DEFAULT FALSE,
     latency_ms    INT     NOT NULL DEFAULT 0,
     tokens        INT     NOT NULL DEFAULT 0,
-    error         VARCHAR(512) NOT NULL DEFAULT ''
+    error         VARCHAR(512) NOT NULL DEFAULT '',
+    deleted_at    TIMESTAMPTZ
 );
 
 -- ===== 反馈（坏例回流）=====
@@ -356,7 +377,8 @@ CREATE TABLE feedbacks (
     comment       VARCHAR(512) NOT NULL DEFAULT '',
     resolved      BOOLEAN     NOT NULL DEFAULT FALSE,
     eval_case_id  BIGINT      REFERENCES eval_cases(id),
-    created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at    TIMESTAMPTZ
 );
 
 -- ===== 用量 =====
@@ -371,7 +393,8 @@ CREATE TABLE usage_logs (
     prompt_tokens     INT    NOT NULL DEFAULT 0,
     completion_tokens INT    NOT NULL DEFAULT 0,
     cost_amount       NUMERIC(12,6) NOT NULL DEFAULT 0,
-    created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at        TIMESTAMPTZ
 );
 CREATE INDEX idx_usage_agent_time ON usage_logs(agent_id, created_at);
 CREATE INDEX idx_usage_time ON usage_logs(created_at);
@@ -387,5 +410,6 @@ CREATE TABLE sandbox_executions (
     duration_ms  INT         NOT NULL DEFAULT 0,
     stdout_head  TEXT,
     stderr_head  TEXT,
-    created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at   TIMESTAMPTZ
 );

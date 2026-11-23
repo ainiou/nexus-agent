@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"gorm.io/datatypes"
+	"gorm.io/gorm"
 )
 
 // Agent Agent 配置（host 负责路由聚合，expert 负责专项执行）。
@@ -31,6 +32,7 @@ type Agent struct {
 	Status            int16          `gorm:"default:1" json:"status"` // default:1 启用——零值 0 会被误当成"停用"，未显式传 status 时落库取 DB 默认 1
 	CreatedAt         time.Time      `json:"created_at"`
 	UpdatedAt         time.Time      `json:"updated_at"`
+	DeletedAt         gorm.DeletedAt `json:"-"`
 }
 
 // Agent 类型。
@@ -63,6 +65,7 @@ type Tool struct {
 	Status        int16          `json:"status"`
 	CreatedAt     time.Time      `json:"created_at"`
 	UpdatedAt     time.Time      `json:"updated_at"`
+	DeletedAt     gorm.DeletedAt `json:"-"`
 }
 
 // 工具类型。
@@ -87,6 +90,7 @@ type MCPServer struct {
 	ToolsCache   datatypes.JSON `gorm:"type:jsonb;default:'[]'" json:"tools_cache"`
 	CreatedAt    time.Time      `json:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at"`
+	DeletedAt    gorm.DeletedAt `json:"-"`
 }
 
 // A2AAgent A2A 远程 Agent 注册表。
@@ -99,6 +103,7 @@ type A2AAgent struct {
 	LastHealthAt *time.Time     `json:"last_health_at"`
 	CreatedAt    time.Time      `json:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at"`
+	DeletedAt    gorm.DeletedAt `json:"-"`
 }
 
 // TableName 显式指定表名：GORM 默认命名会把 A2AAgent 复数化为 a2_a_agents（数字后强制分段），

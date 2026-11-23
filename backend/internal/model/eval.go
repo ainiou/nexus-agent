@@ -5,17 +5,19 @@ import (
 	"time"
 
 	"gorm.io/datatypes"
+	"gorm.io/gorm"
 )
 
 // EvalDataset 评估数据集。
 type EvalDataset struct {
-	ID          int64     `gorm:"primaryKey" json:"id"`
-	Name        string    `gorm:"size:128" json:"name"`
-	Description string    `gorm:"type:text" json:"description"`
-	Scene       string    `gorm:"size:16;default:agent" json:"scene"` // agent/rag/e2e
-	CaseCount   int       `json:"case_count"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID          int64          `gorm:"primaryKey" json:"id"`
+	Name        string         `gorm:"size:128" json:"name"`
+	Description string         `gorm:"type:text" json:"description"`
+	Scene       string         `gorm:"size:16;default:agent" json:"scene"` // agent/rag/e2e
+	CaseCount   int            `json:"case_count"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `json:"-"`
 }
 
 // EvalCase 评估用例。
@@ -29,6 +31,7 @@ type EvalCase struct {
 	Tags             string         `gorm:"size:255" json:"tags"`
 	Source           string         `gorm:"size:16;default:manual" json:"source"` // manual/import/feedback
 	CreatedAt        time.Time      `json:"created_at"`
+	DeletedAt        gorm.DeletedAt `json:"-"`
 }
 
 // EvalRun 评估执行。
@@ -44,16 +47,17 @@ type EvalRun struct {
 	StartedAt  *time.Time     `json:"started_at"`
 	FinishedAt *time.Time     `json:"finished_at"`
 	CreatedAt  time.Time      `json:"created_at"`
+	DeletedAt  gorm.DeletedAt `json:"-"`
 }
 
 // EvalMetrics 评估指标（写入 EvalRun.Metrics）。
 type EvalMetrics struct {
-	CompletionRate    float64         `json:"completion_rate"`     // 任务完成率
-	Accuracy          float64         `json:"accuracy"`            // 准确性（judge LLM）
-	ToolReasonableness float64        `json:"tool_reasonableness"` // 工具调用合理性
-	P50LatencyMs      int64           `json:"p50_latency_ms"`
-	P95LatencyMs      int64           `json:"p95_latency_ms"`
-	TokenEfficiency   float64         `json:"token_efficiency"` // tokens/任务
+	CompletionRate     float64 `json:"completion_rate"`     // 任务完成率
+	Accuracy           float64 `json:"accuracy"`            // 准确性（judge LLM）
+	ToolReasonableness float64 `json:"tool_reasonableness"` // 工具调用合理性
+	P50LatencyMs       int64   `json:"p50_latency_ms"`
+	P95LatencyMs       int64   `json:"p95_latency_ms"`
+	TokenEfficiency    float64 `json:"token_efficiency"` // tokens/任务
 }
 
 // EvalResult 单用例评估结果。
@@ -68,18 +72,20 @@ type EvalResult struct {
 	LatencyMs    int            `json:"latency_ms"`
 	Tokens       int            `json:"tokens"`
 	Error        string         `gorm:"size:512" json:"error"`
+	DeletedAt    gorm.DeletedAt `json:"-"`
 }
 
 // Prompt Prompt 模板版本（P2 实验室）。
 type Prompt struct {
-	ID        int64     `gorm:"primaryKey" json:"id"`
-	AgentID   *int64    `json:"agent_id"`
-	Name      string    `gorm:"size:128" json:"name"`
-	Content   string    `gorm:"type:text" json:"content"`
+	ID        int64          `gorm:"primaryKey" json:"id"`
+	AgentID   *int64         `json:"agent_id"`
+	Name      string         `gorm:"size:128" json:"name"`
+	Content   string         `gorm:"type:text" json:"content"`
 	Variables datatypes.JSON `gorm:"type:jsonb;default:'[]'" json:"variables"`
-	Version   int       `gorm:"default:1" json:"version"`
-	IsActive  bool      `json:"is_active"`
-	Remark    string    `gorm:"size:255" json:"remark"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	Version   int            `gorm:"default:1" json:"version"`
+	IsActive  bool           `json:"is_active"`
+	Remark    string         `gorm:"size:255" json:"remark"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"-"`
 }

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"gorm.io/datatypes"
+	"gorm.io/gorm"
 )
 
 // KnowledgeBase 知识库。
@@ -22,6 +23,7 @@ type KnowledgeBase struct {
 	Status            string         `gorm:"size:20;default:active" json:"status"`
 	CreatedAt         time.Time      `json:"created_at"`
 	UpdatedAt         time.Time      `json:"updated_at"`
+	DeletedAt         gorm.DeletedAt `json:"-"`
 }
 
 // Document 文档（ETL 状态机驱动）。
@@ -41,6 +43,7 @@ type Document struct {
 	Metadata    datatypes.JSON `gorm:"type:jsonb;default:'{}'" json:"metadata"`
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `json:"-"`
 }
 
 // 文档 ETL 状态机。
@@ -65,4 +68,5 @@ type DocumentChunk struct {
 	VectorID   string         `gorm:"size:64" json:"vector_id"`
 	Status     int16          `gorm:"default:1" json:"status"`
 	CreatedAt  time.Time      `gorm:"index:idx_chunks_doc,priority:2" json:"created_at"`
+	DeletedAt  gorm.DeletedAt `json:"-"`
 }

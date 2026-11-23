@@ -16,10 +16,10 @@ import (
 	"github.com/chengpeng-cp/nexus-agent/internal/infra"
 	"github.com/chengpeng-cp/nexus-agent/internal/llm"
 	"github.com/chengpeng-cp/nexus-agent/internal/observability"
-        "github.com/chengpeng-cp/nexus-agent/internal/observability/logger"
-        "github.com/chengpeng-cp/nexus-agent/internal/security"
+	"github.com/chengpeng-cp/nexus-agent/internal/observability/logger"
 	"github.com/chengpeng-cp/nexus-agent/internal/rag/engine"
 	"github.com/chengpeng-cp/nexus-agent/internal/repo"
+	"github.com/chengpeng-cp/nexus-agent/internal/security"
 	"github.com/chengpeng-cp/nexus-agent/internal/service"
 	"github.com/chengpeng-cp/nexus-agent/internal/vector"
 	"github.com/chengpeng-cp/nexus-agent/internal/worker"
@@ -57,20 +57,20 @@ func run() error {
 	}
 
 	// RAG 引擎（doc-etl 消费方）
-        gateway := llm.NewGateway(&cfg.LLM)
-        store := vector.NewMilvusStore(mcli)
-        repos := repo.New(db)
+	gateway := llm.NewGateway(&cfg.LLM)
+	store := vector.NewMilvusStore(mcli)
+	repos := repo.New(db)
 
-        // 加密器与 server 同源：模型解析需解密 api_key（缺失会 nil panic）
-        encryptor, err := security.NewEncryptor(cfg.SecretKey)
-        if err != nil {
-                return fmt.Errorf("encryptor: %w", err)
-        }
+	// 加密器与 server 同源：模型解析需解密 api_key（缺失会 nil panic）
+	encryptor, err := security.NewEncryptor(cfg.SecretKey)
+	if err != nil {
+		return fmt.Errorf("encryptor: %w", err)
+	}
 
-        // 默认模型解析与 server 同源（service.New 仅用于模型解析）
-        svcs, err := service.New(service.Deps{
-                Cfg: cfg, Repos: repos, Gateway: gateway, RDB: rdb, Vector: store, Encryptor: encryptor,
-        })
+	// 默认模型解析与 server 同源（service.New 仅用于模型解析）
+	svcs, err := service.New(service.Deps{
+		Cfg: cfg, Repos: repos, Gateway: gateway, RDB: rdb, Vector: store, Encryptor: encryptor,
+	})
 	if err != nil {
 		return fmt.Errorf("services: %w", err)
 	}

@@ -5,20 +5,22 @@ import (
 	"time"
 
 	"gorm.io/datatypes"
+	"gorm.io/gorm"
 )
 
 // Workflow 工作流定义（DSL 为 YAML 文本）。
 type Workflow struct {
-	ID          int64     `gorm:"primaryKey" json:"id"`
-	Name        string    `gorm:"size:128" json:"name"`
-	Description string    `gorm:"type:text" json:"description"`
-	DSL         string    `gorm:"column:dsl;type:text" json:"dsl"`
-	Version     int       `gorm:"default:1" json:"version"`
-	IsActive    bool      `json:"is_active"`
-	CreatorID   int64     `json:"creator_id"`
-	Status      int16     `gorm:"default:1" json:"status"` // default:1 启用——零值 0 会被误当成"停用"，未显式传 status 时落库取 DB 默认 1
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID          int64          `gorm:"primaryKey" json:"id"`
+	Name        string         `gorm:"size:128" json:"name"`
+	Description string         `gorm:"type:text" json:"description"`
+	DSL         string         `gorm:"column:dsl;type:text" json:"dsl"`
+	Version     int            `gorm:"default:1" json:"version"`
+	IsActive    bool           `json:"is_active"`
+	CreatorID   int64          `json:"creator_id"`
+	Status      int16          `gorm:"default:1" json:"status"` // default:1 启用——零值 0 会被误当成"停用"，未显式传 status 时落库取 DB 默认 1
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `json:"-"`
 }
 
 // WorkflowRun 工作流执行记录。
@@ -34,6 +36,7 @@ type WorkflowRun struct {
 	StartedAt   *time.Time     `json:"started_at"`
 	FinishedAt  *time.Time     `json:"finished_at"`
 	CreatedAt   time.Time      `json:"created_at"`
+	DeletedAt   gorm.DeletedAt `json:"-"`
 
 	// 非库字段：步骤轨迹
 	Steps []WorkflowStepRun `gorm:"foreignKey:RunID" json:"steps,omitempty"`
@@ -61,6 +64,7 @@ type WorkflowStepRun struct {
 	Tokens     int            `json:"tokens"`
 	StartedAt  *time.Time     `json:"started_at"`
 	FinishedAt *time.Time     `json:"finished_at"`
+	DeletedAt  gorm.DeletedAt `json:"-"`
 }
 
 // 节点类型。
